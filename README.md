@@ -2,6 +2,13 @@
 
 Code-OSS fork for DevOps engineers, SREs, and platform engineers.
 
+## DevOps Modules
+
+- Agents
+- SSH
+- Kubernetes
+- Web Consoles
+
 ## Upstream Base
 
 [Visual Studio Code - Open Source ("Code - OSS")](https://github.com/microsoft/vscode) is the upstream base for this fork.
