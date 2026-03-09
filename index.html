@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DevOps IDE Design Mock</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+    <style>
+      :root {
+        --bg: #1e1e1e;
+        --bg-elev: #252526;
+        --bg-elev-2: #2d2d30;
+        --bg-elev-3: #333333;
+        --line: #3e3e42;
+        --line-soft: #2f2f31;
+        --text: #d4d4d4;
+        --text-soft: #9da1a6;
+        --text-dim: #6f737a;
+        --accent: #007acc;
+        --green: #4ec9b0;
+        --yellow: #dcdcaa;
+        --orange: #d19a66;
+        --red: #f14c4c;
+        --blue: #569cd6;
+        --purple: #c586c0;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: radial-gradient(circle at 12% 4%, #2a2a2f 0, #1d1d20 34%, #171719 100%);
+        color: var(--text);
+        font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      .page {
+        min-height: 100vh;
+        padding: 28px;
+      }
+
+      .title-wrap {
+        margin: 0 0 18px;
+      }
+
+      .eyebrow {
+        color: var(--accent);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+      }
+
+      .title {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      .subtitle {
+        margin: 6px 0 0;
+        color: var(--text-soft);
+        font-size: 14px;
+      }
+
+      .board {
+        border: 1px solid #45454a;
+        border-radius: 14px;
+        background: linear-gradient(165deg, #202024, #1a1a1d);
+        overflow: hidden;
+        box-shadow: 0 26px 60px rgba(0, 0, 0, 0.42);
+      }
+
+      .menu-bar {
+        height: 42px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 0 14px;
+        border-bottom: 1px solid var(--line);
+        background: #2a2a2d;
+        font-size: 12px;
+      }
+
+      .menu-item {
+        color: #c8ccd1;
+      }
+
+      .ide-main {
+        height: 560px;
+        display: grid;
+        grid-template-columns: 48px 260px 1fr 320px;
+        grid-template-rows: 1fr 180px;
+      }
+
+      .activity {
+        grid-row: span 2;
+        background: var(--bg-elev-3);
+        border-right: 1px solid var(--line);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        padding-top: 14px;
+      }
+
+      .ico {
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+        border: 1px solid transparent;
+        background: #3a3a40;
+      }
+
+      .ico.active {
+        background: #0e639c;
+        border-color: #1177bd;
+      }
+
+      .sidebar {
+        grid-row: span 2;
+        background: var(--bg-elev);
+        border-right: 1px solid var(--line);
+        padding: 12px 10px 10px;
+      }
+
+      .sidebar-head {
+        font-size: 11px;
+        color: var(--text-soft);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+      }
+
+      .tree {
+        font-family: "Geist Mono", monospace;
+        font-size: 12px;
+        line-height: 1.7;
+        color: #b8bec5;
+      }
+
+      .tree .folder {
+        color: #dcdcaa;
+      }
+
+      .tree .file {
+        color: #9cdcfe;
+      }
+
+      .main-editor {
+        background: var(--bg);
+        border-right: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .tabs {
+        height: 38px;
+        display: flex;
+        align-items: stretch;
+        border-bottom: 1px solid var(--line);
+        background: #252526;
+      }
+
+      .tab {
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+        font-size: 12px;
+        color: #a9adb2;
+        border-right: 1px solid var(--line-soft);
+      }
+
+      .tab.active {
+        background: #1e1e1e;
+        color: #ffffff;
+      }
+
+      .editor-grid {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 56px 1fr;
+      }
+
+      .gutter {
+        border-right: 1px solid var(--line-soft);
+        background: #1a1a1a;
+        color: #6a6f75;
+        font-family: "Geist Mono", monospace;
+        font-size: 12px;
+        padding: 10px 8px;
+        line-height: 1.72;
+        text-align: right;
+      }
+
+      .code {
+        font-family: "Geist Mono", monospace;
+        font-size: 12px;
+        line-height: 1.72;
+        padding: 10px 14px;
+        white-space: pre;
+      }
+
+      .c-key {
+        color: var(--purple);
+      }
+
+      .c-str {
+        color: #ce9178;
+      }
+
+      .c-num {
+        color: #b5cea8;
+      }
+
+      .c-cmt {
+        color: #6a9955;
+      }
+
+      .right-panel {
+        grid-row: span 2;
+        background: #202024;
+        padding: 10px;
+      }
+
+      .right-card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 10px;
+        background: #27272b;
+        margin-bottom: 10px;
+      }
+
+      .right-card h4 {
+        margin: 0 0 8px;
+        font-size: 12px;
+        color: #d4d4d4;
+      }
+
+      .metric {
+        height: 46px;
+        border-radius: 6px;
+        border: 1px solid var(--line-soft);
+        background: linear-gradient(180deg, #1e2f42, #1a2430);
+        margin-bottom: 8px;
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 6px;
+      }
+
+      .bottom-panel {
+        grid-column: 3 / 4;
+        background: #1b1b1d;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .terminal-tabs {
+        height: 34px;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+      }
+
+      .term-tab {
+        padding: 8px 10px;
+        font-size: 11px;
+        color: #9ba0a6;
+        border-right: 1px solid var(--line-soft);
+      }
+
+      .term-tab.active {
+        color: #ffffff;
+        background: #18181a;
+      }
+
+      .logs {
+        flex: 1;
+        padding: 8px 10px;
+        font-family: "Geist Mono", monospace;
+        font-size: 11px;
+        line-height: 1.55;
+      }
+
+      .log-info {
+        color: var(--blue);
+      }
+
+      .log-warn {
+        color: var(--yellow);
+      }
+
+      .log-error {
+        color: var(--red);
+      }
+
+      .statusbar {
+        height: 26px;
+        background: var(--accent);
+        color: #e4f2ff;
+        font-size: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 10px;
+      }
+
+      .frames {
+        margin-top: 18px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .frame {
+        border: 1px solid #3f4348;
+        border-radius: 12px;
+        background: linear-gradient(170deg, #202024, #19191d);
+        padding: 12px;
+      }
+
+      .frame h3 {
+        margin: 0 0 9px;
+        font-size: 14px;
+      }
+
+      .flow {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .stage {
+        flex: 1;
+        background: #2a2a2f;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 8px;
+        min-height: 74px;
+      }
+
+      .badge {
+        display: inline-block;
+        font-size: 10px;
+        border-radius: 999px;
+        padding: 2px 7px;
+        margin-top: 6px;
+      }
+
+      .b-ok {
+        background: #164f3b;
+        color: #84e1bc;
+      }
+
+      .b-run {
+        background: #163955;
+        color: #7bc4ff;
+      }
+
+      .b-fail {
+        background: #5a2020;
+        color: #ff9c9c;
+      }
+
+      .list {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 1.1fr 1fr 0.8fr 1fr;
+        gap: 8px;
+        padding: 8px 10px;
+        font-size: 11px;
+        border-bottom: 1px solid var(--line-soft);
+        background: #25262a;
+      }
+
+      .row:nth-child(odd) {
+        background: #232429;
+      }
+
+      .chip {
+        font-size: 10px;
+        border-radius: 999px;
+        padding: 2px 7px;
+        background: #2f3137;
+      }
+
+      .env-list {
+        display: grid;
+        gap: 6px;
+      }
+
+      .env-item {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr 0.8fr;
+        padding: 8px 9px;
+        font-size: 11px;
+        border: 1px solid var(--line-soft);
+        border-radius: 7px;
+        background: #24262a;
+      }
+
+      .iframe {
+        height: 164px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: linear-gradient(170deg, #1f2a35, #222326);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .iframe:before {
+        content: "https://grafana.devops.local/d/k8s-overview";
+        position: absolute;
+        top: 8px;
+        left: 10px;
+        font-family: "Geist Mono", monospace;
+        font-size: 11px;
+        color: #91b3d0;
+      }
+
+      .iframe:after {
+        content: "Dashboard Preview";
+        position: absolute;
+        inset: 34px 12px 12px;
+        border: 1px dashed #55718b;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #bcd6ef;
+        font-size: 12px;
+      }
+
+      .legend {
+        margin-top: 18px;
+        font-size: 12px;
+        color: var(--text-soft);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="title-wrap">
+        <div class="eyebrow">Figma Design System Mock</div>
+        <h1 class="title">DevOps IDE Web App</h1>
+        <p class="subtitle">
+          VS Code-like dark workspace with resizable shell, 7 feature panels, and status-first DevOps workflows
+        </p>
+      </div>
+
+      <section class="board">
+        <div class="menu-bar">
+          <span class="menu-item">File</span>
+          <span class="menu-item">Edit</span>
+          <span class="menu-item">View</span>
+          <span class="menu-item">Run</span>
+          <span class="menu-item">Help</span>
+        </div>
+        <div class="ide-main">
+          <aside class="activity">
+            <div class="ico active"></div>
+            <div class="ico"></div>
+            <div class="ico"></div>
+            <div class="ico"></div>
+            <div class="ico"></div>
+            <div class="ico"></div>
+            <div class="ico"></div>
+          </aside>
+
+          <aside class="sidebar">
+            <div class="sidebar-head">Explorer</div>
+            <div class="tree">
+              <div class="folder">devops-ide/</div>
+              <div class="file">├─ Dockerfile</div>
+              <div class="file">├─ docker-compose.yml</div>
+              <div class="folder">├─ .github/</div>
+              <div class="file">│  └─ workflows/deploy.yml</div>
+              <div class="folder">├─ terraform/</div>
+              <div class="file">│  └─ main.tf</div>
+              <div class="file">├─ app/page.tsx</div>
+              <div class="file">└─ lib/mock-data.ts</div>
+            </div>
+          </aside>
+
+          <main class="main-editor">
+            <div class="tabs">
+              <div class="tab active">docker-compose.yml</div>
+              <div class="tab">pipeline.yml</div>
+              <div class="tab">dashboard-view</div>
+            </div>
+            <div class="editor-grid">
+              <div class="gutter">1<br />2<br />3<br />4<br />5<br />6<br />7<br />8<br />9<br />10</div>
+              <div class="code"><span class="c-key">services</span>:
+  app:
+    image: <span class="c-str">"ghcr.io/devops-ide/app:latest"</span>
+    ports:
+      - <span class="c-str">"3000:3000"</span>
+    environment:
+      <span class="c-key">NODE_ENV</span>: <span class="c-str">production</span>
+      <span class="c-key">API_URL</span>: <span class="c-str">https://api.prod.local</span>
+      <span class="c-cmt"># Build -> Test -> Deploy</span></div>
+            </div>
+          </main>
+
+          <aside class="right-panel">
+            <div class="right-card">
+              <h4>Infrastructure</h4>
+              <div class="metric"></div>
+              <div class="metric"></div>
+            </div>
+            <div class="right-card">
+              <h4>Servers</h4>
+              <div><span class="status-dot" style="background:#4ec9b0"></span>prod-api-1 healthy</div>
+              <div><span class="status-dot" style="background:#4ec9b0"></span>prod-api-2 healthy</div>
+              <div><span class="status-dot" style="background:#dcdcaa"></span>staging-api warning</div>
+              <div><span class="status-dot" style="background:#d19a66"></span>db-replica degraded</div>
+            </div>
+          </aside>
+
+          <section class="bottom-panel">
+            <div class="terminal-tabs">
+              <div class="term-tab active">bash</div>
+              <div class="term-tab">zsh</div>
+              <div class="term-tab">output</div>
+            </div>
+            <div class="logs">
+              <div class="log-info">10:24:41 INFO  pipeline/build completed in 28s</div>
+              <div class="log-warn">10:24:52 WARN  terraform plan found drift on db-replica</div>
+              <div class="log-error">10:25:10 ERROR deployment/prod-api-2 healthcheck timeout</div>
+              <div>10:25:13 DEBUG retrying rollout step 2/3...</div>
+            </div>
+          </section>
+        </div>
+        <div class="statusbar">
+          <span>main • 3 pending changes</span>
+          <span>Connected to k8s-prod-eu-west • Notifications 2</span>
+        </div>
+      </section>
+
+      <section class="frames">
+        <article class="frame">
+          <h3>Pipeline / CI-CD Editor</h3>
+          <div class="flow">
+            <div class="stage">
+              <div>Build</div>
+              <span class="badge b-ok">success • 28s</span>
+            </div>
+            <div class="stage">
+              <div>Test</div>
+              <span class="badge b-run">running • 1m 42s</span>
+            </div>
+            <div class="stage">
+              <div>Deploy</div>
+              <span class="badge b-fail">pending</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="frame">
+          <h3>Deployments List</h3>
+          <div class="list">
+            <div class="row"><span>Production</span><span>9f3ab2c</span><span class="chip">Success</span><span>4m 10s</span></div>
+            <div class="row"><span>Staging</span><span>8c13aa1</span><span class="chip">In Progress</span><span>2m 03s</span></div>
+            <div class="row"><span>Production</span><span>0de832d</span><span class="chip">Rolled Back</span><span>1m 40s</span></div>
+          </div>
+        </article>
+
+        <article class="frame">
+          <h3>Environment Variables Manager</h3>
+          <div class="env-list">
+            <div class="env-item"><span>DATABASE_URL</span><span>••••••••••••</span><span>Production</span></div>
+            <div class="env-item"><span>JWT_SECRET</span><span>••••••••••••</span><span>Staging</span></div>
+            <div class="env-item"><span>SENTRY_DSN</span><span>••••••••••••</span><span>Development</span></div>
+          </div>
+        </article>
+
+        <article class="frame">
+          <h3>Custom Dashboard URL Viewer</h3>
+          <div class="iframe"></div>
+        </article>
+      </section>
+
+      <p class="legend">
+        Included in this design: menu bar, activity rail, context sidebar, tabbed editor, bottom terminal/logs, status bar,
+        pipeline flow, infra metrics concept, deployments table, env var manager, and iframe dashboard viewer.
+      </p>
+    </div>
+  </body>
+</html>
